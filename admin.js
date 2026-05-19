@@ -1,0 +1,223 @@
+const SUPABASE_URL =
+"https://gdomsniafobyhlodcmnf.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_Dp8HKAN8AguzAVVhiWrpRw_BXbbk4by";
+
+const supabaseClient =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+// ============================
+// CARREGAR CLIENTES
+// ============================
+
+async function carregarClientes(){
+
+  const { data, error } =
+  await supabaseClient
+  .from("usuarios")
+  .select("*")
+  .order("id", { ascending:false });
+
+  if(error){
+
+    alert(error.message);
+    return;
+  }
+
+  const clientes =
+  document.getElementById("clientes");
+
+  clientes.innerHTML = "";
+
+  data.forEach(cliente => {
+
+    const hoje =
+    new Date();
+
+    let atrasado = false;
+
+    if(cliente.vencimento){
+
+      const vencimento =
+      new Date(cliente.vencimento);
+
+      atrasado =
+      hoje > vencimento;
+    }
+
+    let statusHTML = "";
+
+    if(cliente.ativo === false){
+
+      statusHTML = `
+        <span class="bloqueado">
+          CLIENTE BLOQUEADO
+        </span>
+      `;
+
+    } else if(atrasado){
+
+      statusHTML = `
+        <span class="atrasado">
+          MENSALIDADE ATRASADA
+        </span>
+      `;
+
+    } else {
+
+      statusHTML = `
+        <span class="ativo">
+          EM DIA
+        </span>
+      `;
+    }
+
+    clientes.innerHTML += `
+
+      <div class="cliente">
+
+        <div class="info">
+
+          <h3>
+            ${cliente.nome}
+          </h3>
+
+          <small>
+            ${cliente.telefone}
+          </small>
+
+          <br><br>
+
+          <small>
+
+            Vencimento:
+            ${cliente.vencimento || "Não definido"}
+
+          </small>
+
+          ${statusHTML}
+
+        </div>
+
+        <div class="acoes">
+
+          <button
+            class="bloquear"
+            onclick="bloquear(${cliente.id})"
+          >
+
+            Bloquear
+
+          </button>
+
+          <button
+            class="liberar"
+            onclick="liberar(${cliente.id})"
+          >
+
+            Liberar
+
+          </button>
+
+          <button
+            class="renovar"
+            onclick="renovar(${cliente.id})"
+          >
+
+            Renovar +30 Dias
+
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+  });
+}
+
+// ============================
+// BLOQUEAR
+// ============================
+
+async function bloquear(id){
+
+  const { error } =
+  await supabaseClient
+  .from("usuarios")
+  .update({
+    ativo:false
+  })
+  .eq("id", id);
+
+  if(error){
+
+    alert(error.message);
+    return;
+  }
+
+  carregarClientes();
+}
+
+// ============================
+// LIBERAR
+// ============================
+
+async function liberar(id){
+
+  const { error } =
+  await supabaseClient
+  .from("usuarios")
+  .update({
+    ativo:true
+  })
+  .eq("id", id);
+
+  if(error){
+
+    alert(error.message);
+    return;
+  }
+
+  carregarClientes();
+}
+
+// ============================
+// RENOVAR
+// ============================
+
+async function renovar(id){
+
+  const novaData =
+  new Date();
+
+  novaData.setDate(
+    novaData.getDate() + 30
+  );
+
+  const { error } =
+  await supabaseClient
+  .from("usuarios")
+  .update({
+
+    ativo:true,
+
+    vencimento:novaData
+
+  })
+  .eq("id", id);
+
+  if(error){
+
+    alert(error.message);
+    return;
+  }
+
+  carregarClientes();
+}
+
+carregarClientes();
