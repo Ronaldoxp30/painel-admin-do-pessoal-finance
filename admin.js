@@ -132,6 +132,15 @@ async function carregarClientes(){
 
           </button>
 
+          <button
+            class="apagar"
+            onclick="deletar(${cliente.id})"
+          >
+
+            Apagar
+
+          </button>
+
         </div>
 
       </div>
@@ -209,6 +218,40 @@ async function renovar(id){
     vencimento:novaData
 
   })
+  .eq("id", id);
+
+  if(error){
+
+    alert(error.message);
+    return;
+  }
+
+  carregarClientes();
+}
+
+// ============================
+// DELETAR
+// ============================
+
+async function deletar(id){
+
+  const confirmed = confirm("Tem certeza que deseja apagar este usuário?");
+
+  if(!confirmed){
+    return;
+  }
+
+  const senha = prompt("Digite a senha para apagar o usuário:");
+
+  if(senha !== "123"){
+    alert("Senha incorreta. A exclusão foi cancelada.");
+    return;
+  }
+
+  const { error } =
+  await supabaseClient
+  .from("usuarios")
+  .delete()
   .eq("id", id);
 
   if(error){
