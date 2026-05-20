@@ -83,8 +83,16 @@ async function carregarClientes(){
         <div class="info">
 
           <h3>
-            ${cliente.nome}
-          </h3>
+
+  <span class="${
+    cliente.online
+    ? 'status-online'
+    : 'status-offline'
+  }"></span>
+
+  ${cliente.nome}
+
+</h3>
 
           <small>
             ${cliente.telefone}
@@ -264,3 +272,25 @@ async function deletar(id){
 }
 
 carregarClientes();
+async function ficarOnline(){
+
+  await supabaseClient
+  .from("usuarios")
+  .update({
+    online:true
+  })
+  .eq("id", usuarioLogado.id);
+
+}
+
+ficarOnline();
+window.addEventListener("beforeunload", async ()=>{
+
+  await supabaseClient
+  .from("usuarios")
+  .update({
+    online:false
+  })
+  .eq("id", usuarioLogado.id);
+
+});
